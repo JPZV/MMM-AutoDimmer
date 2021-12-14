@@ -25,6 +25,14 @@ Module.register("MMM-AutoDimmer", {
 
     self.initialRun = true; // Only true when MM is first loaded
     self.transitionCount = 0; // Counts how many iterations into the transition we are
+
+    // If time already passed, reset for tomorrow
+    if(self.timeToBrighten < new Date()) {
+      self.timeToBrighten.setDate(self.timeToBrighten.getDate() + 1);
+    }
+    if(self.timeToDim < new Date()) {
+      self.timeToDim.setDate(self.timeToDim.getDate() + 1);
+    }
   },
 
   notificationReceived: function(notification, payload, sender) {
