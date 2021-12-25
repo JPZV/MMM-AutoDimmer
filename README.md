@@ -25,7 +25,7 @@ To use this module, add it to the modules array in the `~/MagicMirror/config/con
 
 You can have as many schedules as you want, which will allow you to dim / brighten the screen multiple times per day if you like.
 
-# Example 1
+### Example 1
 ```javascript
 modules: [
   {
@@ -40,7 +40,7 @@ modules: [
 ]
 ```
 
-# Example 2
+### Example 2
 ```javascript
 modules: [
   {
@@ -63,7 +63,7 @@ modules: [
 ]
 ```
 
-# Example 3
+### Example 3
 ```javascript
 modules: [
   {
@@ -91,13 +91,13 @@ modules: [
 
 ## Configuration options
 
-# Main config
+### Main config
 
 |Option|Default|Description|
 |---|---|---|
 |`schedules`||See below table for how to configure schedules.|
 
-# Schedules
+### Schedules
 
 |Option|Default|Description|Acceptible Values|
 |---|---|---|---|
@@ -108,7 +108,7 @@ modules: [
 |`transitionDuration`|`10 * 60 * 1000`|How long to take (in ms) to gradually dim the screen after dimTime or brighten the screen after brightTime. Default is 10 minutes.| 0 or greater |
 |`transitionSteps`|`20`|How many gradual changes to make during transitionDuration. By default, it will gradually change brightness every 30 seconds during the transition time. (20 times in a 10 minute period.)| 1 or greater |
 
-## Special Cases
+#### Special Cases
 
 - If multiple schedules overlap, dim will take precidence over bright.
 - If `dimTime` and `brightTime` are the same for any schedule, the screen will always be dimmed.
