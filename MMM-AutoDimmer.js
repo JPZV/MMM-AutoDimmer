@@ -15,7 +15,8 @@ Module.register("MMM-AutoDimmer", {
 		]
 	},
   
-	log: function(text) {
+	// get current date and time for displaying in log
+	getDateTime: function(text) {
 		var currentdate = new Date(); 
 		var minute = currentdate.getMinutes();
 		if(minute < 10) {
@@ -25,13 +26,12 @@ Module.register("MMM-AutoDimmer", {
 		if(second < 10) {
 			second = "0" + second;
 		}
-		var datetime = currentdate.getFullYear() + "/"
+		return currentdate.getFullYear() + "/"
 						+ (currentdate.getMonth()+1)  + "/" 
 						+ currentdate.getDate() + " " 
 						+ currentdate.getHours() + ":"  
 						+ minute + ":" 
 						+ second;
-		console.log(datetime + ": MMM-AutoDimmer: " + text);
 	},
 
 	// get default value for a variable if it's not set
@@ -68,6 +68,8 @@ Module.register("MMM-AutoDimmer", {
 			timeToDim.setHours(Math.floor(dimTime / 100), Math.floor(dimTime % 100), 0, 0);
 
 			var timeToBrighten = new Date();
+			console.log(self.getDateTime() + ": " + this.name + ": timeToBrighten: " + timeToBrighten);
+			console.log(self.getDateTime() + ": " + this.name + ": timeToBrighten.getDate(): " + timeToBrighten.getDate());
 			timeToBrighten.setHours(Math.floor(brightTime / 100), Math.floor(brightTime % 100), 0, 0);
 
 			transitionCount = 0; // Counts how many iterations into the transition we are
@@ -109,7 +111,7 @@ Module.register("MMM-AutoDimmer", {
 	getDom: function() {
 		var self = this;
 		var now = new Date();
-		var nextUpdate;
+		var nextUpdate = 0;
 		var opacity = 0;
 
 		var dimming = false;
@@ -122,7 +124,7 @@ Module.register("MMM-AutoDimmer", {
 
 		// Starts to dim the screen
 		function setDim(schedule) {
-			self.log("Dim");
+			console.log(self.getDateTime() + ": " + this.name + ": Dim");
 			// Find out which day of the week it is
 			const weekday = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 			const today = weekday[(new Date()).getDay()];
@@ -137,33 +139,44 @@ Module.register("MMM-AutoDimmer", {
 					// If Magic Mirror was loaded during dim time, or if done dimming
 					if(self.initialRun || schedule.transitionCount == schedule.transitionSteps - 1) {
 						opacity = schedule.maxDim;
-						nextUpdate = startToBrighten - now.getTime();
 						schedule.transitionCount = 0;
+						
+						if(nextUpdate === 0 || nextUpdate > startToBrighten - now.getTime()) {
+							nextUpdate = startToBrighten - now.getTime();
+						}
 					}
 					// Transition from bright to dim
 					else {
 						schedule.transitionCount = schedule.transitionCount + 1;
-						nextUpdate = (schedule.transitionDuration / schedule.transitionSteps);
 						opacity = opacityStep * schedule.transitionCount;
+						
+						if(nextUpdate === 0 || nextUpdate > (schedule.transitionDuration / schedule.transitionSteps)) {
+							nextUpdate = (schedule.transitionDuration / schedule.transitionSteps);
+						}
 					}
 				}
 				// Set to fully dim immediately
 				else{
 					opacity = schedule.maxDim;
-					nextUpdate = startToBrighten - now.getTime();
+					if(nextUpdate === 0 || nextUpdate > startToBrighten - now.getTime()) {
+						nextUpdate = startToBrighten - now.getTime();
+					}
 				}
 
 				dimming = true;
 			}
 			else {
-				self.log(today + " is not in this schedule. Will not dim.");
+				console.log(self.getDateTime() + ": " + this.name + ": " + today + " is not in this schedule. Will not dim.");
 				finalSchedule = schedule;
+				if(nextUpdate === 0 || nextUpdate > startToBrighten - now.getTime()) {
+					nextUpdate = startToBrighten - now.getTime();
+				}
 			}
 		}
 
 		// Starts to brighten the screen
 		function setBright(schedule) {
-			self.log('Bright');
+			console.log(self.getDateTime() + ": " + this.name + ": Bright");
 
 			// How much to change opacity by at each step
 			var opacityStep = schedule.maxDim / schedule.transitionSteps;
@@ -173,26 +186,34 @@ Module.register("MMM-AutoDimmer", {
 				// If Magic Mirror was loaded during bright schedule, or if done brightening
 				if(self.initialRun || schedule.transitionCount == (schedule.transitionSteps - 1)) {
 					opacity = 0;
-					nextUpdate = startToDim - now.getTime();
 					schedule.transitionCount = 0;
+					
+					if(nextUpdate === 0 || nextUpdate > startToDim - now.getTime()) {
+						nextUpdate = startToDim - now.getTime();
+					}
 				}
 				// Transition from dim to bright
 				else {
 					schedule.transitionCount = schedule.transitionCount + 1;
-					nextUpdate = (schedule.transitionDuration / schedule.transitionSteps);
 					opacity = schedule.maxDim - (opacityStep * schedule.transitionCount);
+					
+					if(nextUpdate === 0 || nextUpdate > (schedule.transitionDuration / schedule.transitionSteps)) {
+						nextUpdate = (schedule.transitionDuration / schedule.transitionSteps);
+					}
 				}
 			}
 			// Set to fully bright immediately
 			else {
-				nextUpdate = startToDim - now.getTime();
 				opacity = 0;
+				
+				if(nextUpdate === 0 || nextUpdate > startToDim - now.getTime()) {
+					nextUpdate = startToDim - now.getTime();
+				}
 			}
 		}
 
 		var finalSchedule;
 
-		//for(let schedule of self.mySchedule) {
 		self.mySchedule.forEach((schedule) => {
 			
 			// If time already passed, reset for tomorrow
@@ -239,7 +260,7 @@ Module.register("MMM-AutoDimmer", {
 			setBright(finalSchedule);
 		}
 
-		self.log("Opacity: " + opacity);
+		console.log(self.getDateTime() + ": " + this.name + ": Opacity: " + opacity);
 
 		// Set the overlay
 		if (self.overlay === null) {
