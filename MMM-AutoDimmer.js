@@ -1,7 +1,6 @@
 // MMM-AutoDimmer.js
 
 Module.register("MMM-AutoDimmer", {
-<<<<<<< HEAD
 	// Default module config
 	defaults: {
 		schedules: [ 
@@ -38,7 +37,7 @@ Module.register("MMM-AutoDimmer", {
 	getStartOfLog : function() {
 		return this.getDateTime() + ": " + this.name + ": ";
 	},
-=======
+
   // Default module config
   defaults: {
     maxDim: 0.9,
@@ -122,7 +121,6 @@ Module.register("MMM-AutoDimmer", {
         else{
             nextUpdate = startToBrighten - now.getTime();
         }
->>>>>>> parent of 2ffb332 (Add ability to create multiple schedules)
 
         self.initialRun = false;
     }
@@ -151,7 +149,6 @@ Module.register("MMM-AutoDimmer", {
             nextUpdate = startToDim - now.getTime();
             opacity = 0;
         }
-<<<<<<< HEAD
     },
   
 	start: function() {
@@ -226,13 +223,10 @@ Module.register("MMM-AutoDimmer", {
 		var now = new Date();
 		var nextUpdate = 0;
 		var opacity = 0;
-=======
->>>>>>> parent of 2ffb332 (Add ability to create multiple schedules)
 
         self.initialRun = false;
     }
-
-<<<<<<< HEAD
+	  
 		// Variables for loop
 		var startToBrighten;
 		var brighten;
@@ -407,7 +401,7 @@ Module.register("MMM-AutoDimmer", {
 
 		return self.overlay;
 	},
-=======
+
     // Need to treat these ranges differently based on which value is greater
     if(brighten < dim) {
         if (now.getTime() < startToBrighten || now.getTime() > dim) {
@@ -446,5 +440,4 @@ Module.register("MMM-AutoDimmer", {
 
     return self.overlay;
   },
->>>>>>> parent of 2ffb332 (Add ability to create multiple schedules)
 });
