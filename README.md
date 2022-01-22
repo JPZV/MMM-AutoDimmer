@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # Module: MMM-AutoDimmer
 Allows you to dim your magic mirror on a schedule. You simply set a time to dim and a time to brighten (and a few other optional settings, if you like) and it does the rest. At the dim time, it will gradually dim the screen until it hits the max threshold you set. When it's time to brighten again, it will gradually brighten the screen to full brightness.
 
@@ -172,4 +172,3 @@ The following properties can be configured:
 |`dimTime`|`2000`|When to start to dim the screen. Formatted as 24-hour time with no special characters. Ex: 2000 = 8:00 PM|
 |`transitionDuration`|`10 * 60 * 1000`|How long to take (in ms) to gradually dim the screen after dimTime or brighten the screen after brightTime.|
 |`transitionSteps`|`20`|How many gradual changes to make during transitionDuration. By default, it will gradually change brightness every 30 seconds during the transition time. (20 times in a 10 minute period.)|
->>>>>>> parent of 2ffb332 (Add ability to create multiple schedules)
