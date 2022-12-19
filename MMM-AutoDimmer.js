@@ -11,7 +11,7 @@ Module.register("MMM-AutoDimmer", {
 				transitionSteps: 20,
 				brightTime: 700,
 				dimTime: 2000,
-				notificaitonTrigger: undefined
+				notificationTriggers: undefined
 			}
 		]
 	},
@@ -116,18 +116,22 @@ Module.register("MMM-AutoDimmer", {
 			if(schedule.notificationTriggers !== undefined) {
 
 				var origValue = schedule.triggerSatisfied;
-				schedule.triggerSatisfied = undefined;
 				var triggerSatisfied = false;
+				var nameSame = false;
 
 				schedule.notificationTriggers.forEach((trigger) => {
 					// Check If this notification matches this schedule's trigger
 					if(trigger.name == notification) {
+						schedule.triggerSatisfied = undefined;
+						nameSame = true;
+
+						console.log(self.getStartOfLog() + "Trigger Satisfied. NorificationName: " + notification + " Notification Value: " + payload);
 						// Set trigger to satisfied if notification vaue matches trigger value
 						if(trigger.value == payload) {
 							schedule.triggerSatisfied = true;
 							triggerSatisfied = true;
 							// If the value changed
-							if(originalValue === undefined || !originalVlaue) {
+							if(origValue === undefined || origValue === false) {
 								somethingChanged = true;
 							}
 						}
@@ -135,9 +139,9 @@ Module.register("MMM-AutoDimmer", {
 				});
 
 				// Set trigger to not satisfied if notification vaue matches trigger value
-				if(!triggerSatisfied) {
+				if(!triggerSatisfied && nameSame === true) {
 					schedule.triggerSatisfied = false;
-					if(origValue === undefined || origValue) {
+					if(origValue === undefined || origValue === true) {
 						somethingChanged = true;
 					}
 				}
@@ -401,9 +405,8 @@ Module.register("MMM-AutoDimmer", {
 				yesterday = weekday[6];
 			}
 
-			console.log(self.getStartOfLog() + "schedule.triggerSatisfied: " + schedule.triggerSatisfied);
 			// If schedule is set to run today
-			if(schedule.days.includes(today)) {
+			if(schedule.days.includes(today) || (schedule.dimTime > schedule.brightTime && schedule.days.includes(yesterday))) {
 				if(triggerSatisfied) {
 					if(schedule.dimTime == schedule.brightTime) {
 						console.log(self.getStartOfLog() + 'Calling dim bc dimTime = brightTime, so it should always be dim');
@@ -414,19 +417,6 @@ Module.register("MMM-AutoDimmer", {
 						self.setDim(schedule);
 					}
 					else if(now.getTime() > startToBrighten && now.getTime() < brighten) {
-						console.log(self.getStartOfLog() + 'Calling bright bc it\'s brightening');
-						self.setBright(schedule);
-					}
-					else {
-						schedule.mode = "Dormant";
-						self.setNextDay(schedule);
-					}
-				}
-			}
-			// Cover case where it dimmed yesterday, and is still active
-			else if(schedule.dimTime > schedule.brightTime && schedule.days.includes(yesterday)) {
-				if(triggerSatisfied) {
-					if(now.getTime() > startToBrighten && now.getTime() < brighten) {
 						console.log(self.getStartOfLog() + 'Calling bright bc it\'s brightening');
 						self.setBright(schedule);
 					}
