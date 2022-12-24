@@ -83,7 +83,8 @@ Module.register("MMM-AutoDimmer", {
 			}
 
 			// If should be in a dim time that started yesterday, set timeToDim to yesterday
-			if(dimTime > brightTime && now.getTime() < timeToBrighten.getTime() && timeToDim.getTime() > now.getTime() && now.getHours() < Math.floor(dimTime / 100)) {
+			if((now.getHours() < Math.floor(dimTime / 100) || (now.getHours() == Math.floor(dimTime / 100) && now.getMinutes() < Math.floor(dimTime % 100))) &&
+				now.getTime() > timeToBrighten.getTime()) {
 				timeToDim.setDate(now.getDate() - 1);
 			}
 
