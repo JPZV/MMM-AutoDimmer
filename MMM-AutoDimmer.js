@@ -77,8 +77,13 @@ Module.register("MMM-AutoDimmer", {
 			var timeToBrighten = new Date();
 			timeToBrighten.setHours(Math.floor(brightTime / 100), Math.floor(brightTime % 100), 0, 0);
 
+			// If it's after brightTime, and this schedule dims overnight
+			if(now.getTime() > timeToBrighten.getTime() && dimTime > brightTime) {
+				timeToBrighten.setDate(now.getDate() + 1);
+			}
+
 			// If should be in a dim time that started yesterday, set timeToDim to yesterday
-			if(dimTime > brightTime && now.getTime() < timeToBrighten.getTime() && timeToDim.getTime() > now.getTime()) {
+			if(dimTime > brightTime && now.getTime() < timeToBrighten.getTime() && timeToDim.getTime() > now.getTime() && now.getHours() < Math.floor(dimTime / 100)) {
 				timeToDim.setDate(now.getDate() - 1);
 			}
 
@@ -125,9 +130,10 @@ Module.register("MMM-AutoDimmer", {
 						schedule.triggerSatisfied = undefined;
 						nameSame = true;
 
-						console.log(self.getStartOfLog() + "Trigger Satisfied. NorificationName: " + notification + " Notification Value: " + payload);
+						console.log(self.getStartOfLog() + "Trigger check. NotificationName: " + notification + " Notification Value: " + payload);
 						// Set trigger to satisfied if notification vaue matches trigger value
 						if(trigger.value == payload) {
+							console.log(self.getStartOfLog() + "Trigger satisfied.");
 							schedule.triggerSatisfied = true;
 							triggerSatisfied = true;
 							// If the value changed
@@ -141,7 +147,7 @@ Module.register("MMM-AutoDimmer", {
 				// Set trigger to not satisfied if notification vaue matches trigger value
 				if(!triggerSatisfied && nameSame === true) {
 					schedule.triggerSatisfied = false;
-					if(origValue === undefined || origValue === true) {
+					if(origValue === true) {
 						somethingChanged = true;
 					}
 				}
@@ -168,14 +174,7 @@ Module.register("MMM-AutoDimmer", {
 
 		//While time to dim is in the past
 		while(schedule.timeToDim.getTime() < now.getTime()) {
-			// Set to tomorrow if not initial run and in the middle of dim time
-			if(!(self.initialRun && (now.getTime() > (schedule.timeToDim.getTime() - schedule.transitionDuration) && now.getTime() < schedule.timeToBrighten.getTime()))) {
-				schedule.timeToDim.setDate(schedule.timeToDim.getDate() + 1);
-			}
-			// if started in dim time, break out of the loop
-			else {
-				return;
-			}
+			schedule.timeToDim.setDate(schedule.timeToDim.getDate() + 1);
 		}
 	},
 
@@ -251,7 +250,6 @@ Module.register("MMM-AutoDimmer", {
 
 		if(schedule.notificationTriggers !== undefined && schedule.triggerSatisfied === false) {
 			console.log(self.getStartOfLog() + "Notification trigger not satisfied, so skipping this schedule.");
-			self.setNextUpdate(self.findNextBright());
 			schedule.mode = "Dormant";
 			return;
 		}
@@ -313,14 +311,12 @@ Module.register("MMM-AutoDimmer", {
 		console.log(self.getStartOfLog() + 'Bright');
 
 		if(schedule === null) {
-			self.setOpacity(0);
-			self.setNextUpdate(self.findNextDim());
+			return;
 		}
 		// If schedule shouldn't be triggering anymore, based on notification setting, return to bright immediately
 		else if(schedule.triggerSatisfied !== undefined && !schedule.triggerSatisfied){
 			console.log(self.getStartOfLog() + 'Setting fully Bright');
 			// Set to fully bright immediately
-			self.setNextUpdate(self.findNextDim());
 			self.setOpacity(0);
 			schedule.mode = "Dormant";
 
@@ -345,7 +341,6 @@ Module.register("MMM-AutoDimmer", {
 			schedule.mode = "Brightening";
 
 			if(self.opacity <= 0 || millisPastStart >= schedule.transitionDuration) {
-				self.setNextUpdate(self.findNextDim());
 				self.setOpacity(0);
 				schedule.mode = "Dormant";
 				self.setNextDay(schedule);
@@ -353,7 +348,6 @@ Module.register("MMM-AutoDimmer", {
 		}
 		// Set to fully bright immediately
 		else {
-			self.setNextUpdate(self.findNextDim());
 			self.setOpacity(0);
 			schedule.mode = "Dormant";
 			self.setNextDay(schedule);
@@ -438,8 +432,11 @@ Module.register("MMM-AutoDimmer", {
 		});
 
 		if(activeCount === 0) {
-			console.log(self.getStartOfLog() + 'Calling bright because no active scheuldes');
-			self.setBright(null);
+			console.log(self.getStartOfLog() + 'Bright because no active scheuldes');
+			self.setNextUpdate(self.findNextDim());
+		}
+		else {
+			self.setNextUpdate(self.findNextBright());
 		}
 
 		// Set the overlay
