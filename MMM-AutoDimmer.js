@@ -171,11 +171,12 @@ Module.register("MMM-AutoDimmer", {
 		// If time already passed, reset for tomorrow
 		while(schedule.timeToBrighten.getTime() < now.getTime()) {
 			schedule.timeToBrighten.setDate(schedule.timeToBrighten.getDate() + 1);
-		}
 
-		//While time to dim is in the past
-		while(schedule.timeToDim.getTime() < now.getTime()) {
-			schedule.timeToDim.setDate(schedule.timeToDim.getDate() + 1);
+			// While time to dim is in the past
+			// Only do this when adjusting brightTime to prevent prematurely adjusting dimTime
+			while(schedule.timeToDim.getTime() < now.getTime()) {
+				schedule.timeToDim.setDate(schedule.timeToDim.getDate() + 1);
+			}
 		}
 	},
 
@@ -273,7 +274,7 @@ Module.register("MMM-AutoDimmer", {
 				// Length of each transition step
 				stepLength = schedule.transitionDuration / schedule.transitionSteps;
 				// How far, in milliseconds, are we past when we started to dim
-				millisPastStart = now - startToDim;
+				millisPastStart = now.getTime() - startToDim;
 				// How many steps have passed since we started to dim
 				stepsIn = Math.floor(millisPastStart / stepLength);
 				// How much time is left in the current step before moving to the next step. Should be stepLength unless loaded during transition period.
@@ -408,7 +409,7 @@ Module.register("MMM-AutoDimmer", {
 						self.setDim(schedule);
 					}
 					else if (now.getTime() >= startToDim && now.getTime() < startToBrighten) {
-						console.log(self.getStartOfLog() + 'Calling dim bc it\'s time to and dim < bright');
+						console.log(self.getStartOfLog() + 'Calling dim bc it\'s time to');
 						self.setDim(schedule);
 					}
 					else if(now.getTime() > startToBrighten && now.getTime() < brighten) {
