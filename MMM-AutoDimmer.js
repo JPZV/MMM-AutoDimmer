@@ -169,12 +169,11 @@ Module.register("MMM-AutoDimmer", {
 		var now = new Date();
 
 		// If time already passed, reset for tomorrow
-		while(schedule.timeToBrighten.getTime() < now.getTime()) {
+		while(schedule.timeToBrighten.getTime() <= now.getTime()) {
 			schedule.timeToBrighten.setDate(schedule.timeToBrighten.getDate() + 1);
 
-			// While time to dim is in the past
-			// Only do this when adjusting brightTime to prevent prematurely adjusting dimTime
-			while(schedule.timeToDim.getTime() < now.getTime()) {
+			//While time to dim is in the past
+			while(schedule.timeToDim.getTime() <= now.getTime()) {
 				schedule.timeToDim.setDate(schedule.timeToDim.getDate() + 1);
 			}
 		}
@@ -342,7 +341,7 @@ Module.register("MMM-AutoDimmer", {
 			self.setOpacity((schedule.maxDim - (schedule.opacityStep * stepsIn)));
 			schedule.mode = "Brightening";
 
-			if(self.opacity <= 0 || millisPastStart >= schedule.transitionDuration) {
+			if(self.opacity <= 0 || millisPastStart >= schedule.transitionDuration || now.getTime() >= schedule.timeToBrighten.getTime()) {
 				self.setOpacity(0);
 				schedule.mode = "Dormant";
 				self.setNextDay(schedule);
@@ -461,7 +460,6 @@ Module.register("MMM-AutoDimmer", {
 	},
 
 	getDom: function() {
-
 		var self = this;
 		self.setOverlay();
 
