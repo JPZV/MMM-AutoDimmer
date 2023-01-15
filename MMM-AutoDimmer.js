@@ -179,6 +179,13 @@ Module.register("MMM-AutoDimmer", {
 		}
 	},
 
+	setNextUpdate: function(newValue) {
+		// Only set if it's not already set or smaller than the current value, but also greater than 0
+		if((newValue < this.nextUpdate || this.nextUpdate == 0) && newValue > 0) {
+			this.nextUpdate = newValue;
+		}
+	},
+
 	// Find the next time any schedule will dim
 	findNextDim: function() {
 		var nextDimTime = -1;
@@ -200,13 +207,6 @@ Module.register("MMM-AutoDimmer", {
 		console.log(self.getStartOfLog() + "nextDimTime: " + nextDimTime);
 
 		return nextDimTime;
-	},
-
-	setNextUpdate: function(newValue) {
-		// Only set if it's not already set or smaller than the current value, but also greater than 0
-		if((newValue < this.nextUpdate || this.nextUpdate == 0) && newValue > 0) {
-			this.nextUpdate = newValue;
-		}
 	},
 
 	// Find the next time a schedule will brighten the screen
@@ -257,7 +257,12 @@ Module.register("MMM-AutoDimmer", {
 
 		if(self.opacity < schedule.maxDim) {
 			if(schedule.dimTime == schedule.brightTime) {
-				self.setNextUpdate(86400000);
+				// Set to check tomorrow at midnight to see if it's scheduled that day
+				var tomorrow = new Date();
+				tomorrow.setDate(tomorrow.getDate() + 1);
+				tomorrow.setHours(0, 0, 0, 0);
+
+				self.setNextUpdate(tomorrow.getTime() - now.getTime());
 				schedule.mode = "Dim";
 				self.setOpacity(schedule.maxDim);
 			}
@@ -291,12 +296,10 @@ Module.register("MMM-AutoDimmer", {
 			else {
 				self.setNextUpdate(startToBrighten - now.getTime());
 				schedule.mode = "Dim";
-				//console.log(self.getStartOfLog() + "Setting to full dim because transitionDuration <= 0.");
 				self.setOpacity(schedule.maxDim);
 			}
 		}
 		else {
-			//console.log(self.getStartOfLog() + "Setting to full dim because opacity >= maxDim.");
 			self.setNextUpdate(startToBrighten - now.getTime());
 			schedule.mode = "Dim";
 			self.setOpacity(schedule.maxDim);
@@ -374,7 +377,6 @@ Module.register("MMM-AutoDimmer", {
 
 		self.opacity = 0;
 		self.nextUpdate = 0;
-		activeCount = 0;
 
 		self.mySchedule.forEach((schedule) => {
 			var startToBrighten = schedule.timeToBrighten.getTime() - schedule.transitionDuration;
@@ -426,19 +428,11 @@ Module.register("MMM-AutoDimmer", {
 				schedule.mode = "Dormant";
 				self.setNextDay(schedule);
 			}
-
-			if(schedule.mode != "Dormant") {
-				activeCount++;
-			}
 		});
 
-		if(activeCount === 0) {
-			console.log(self.getStartOfLog() + 'Bright because no active scheuldes');
-			self.setNextUpdate(self.findNextDim());
-		}
-		else {
-			self.setNextUpdate(self.findNextBright());
-		}
+		// find the next update time - catch all in case there are no schedules active
+		self.setNextUpdate(self.findNextDim());
+		self.setNextUpdate(self.findNextBright());
 
 		// Set the overlay
 		if (self.overlay === null) {
