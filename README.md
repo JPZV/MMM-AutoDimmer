@@ -150,15 +150,19 @@ modules: [
     // Don't change anything above this line
     config: {
       schedules: [{
-        // Will be dim starting when a notification is received with name "HOME"
-          //and value false
-        // Will no longer be dim when a notification is received with name "HOME"
-          // and value of anything other than false
         notificationTriggers: [
+          // Will be dim starting when a notification is received with name "HOME"
+            // and value false
+          // Will no longer be dim when a notification is received with name "HOME"
+            // and value of anything other than false
           {
             name: "HOME",
             value: false
           },
+          // Will be dim starting when a notification is received with name "TV"
+            //and value "on"
+          // Will no longer be dim when a notification is received with name "TV"
+            // and value of anything other than "on"
           {
             name: "TV",
             value: "on"
@@ -180,7 +184,7 @@ Notification Received: `name: "HOME", value: false` <BR>
 Action: This schedule will activate, because a notification was received with the name `"HOME"` and the value `false`.
 
 Condition: 5 minutes later (12:05pm)<BR>
-Notification Received: `name: "BUS_ARRIVING", value: 12:12pm'`<BR>
+Notification Received: `name: "BUS_ARRIVING", value: 12:12pm`<BR>
 Action: Nothing happens, because the name of the notification does not match the name set on the trigger.
 
 Condition: 5 minutes later (12:10pm)<BR>
@@ -188,7 +192,7 @@ Notification Received: `name: "HOME", value: false` <BR>
 Action: Nothing changes, because the schedule is already active.
 
 Condition: 5 minutes later (12:15pm)<BR>
-Notification Received: `name: "HOME", value: true'`<BR>
+Notification Received: `name: "HOME", value: true`<BR>
 Action: This schedule becomes inactive,  because a notification was received with the name `"HOME"` and the value `true`. Since name matches but value does not, this schedule is deactivated.
 
 
