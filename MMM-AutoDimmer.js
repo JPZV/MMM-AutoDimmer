@@ -16,6 +16,8 @@ Module.register("MMM-AutoDimmer", {
 		]
 	},
 
+	shouldPowerOn: true,
+
 	// get current date and time for displaying in log
 	getDateTime: function() {
 		var currentdate = new Date();
@@ -109,6 +111,7 @@ Module.register("MMM-AutoDimmer", {
 		});
 
 		self.mySchedule = mySchedules;
+		self.initGPIOs();
 	},
 
 	notificationReceived: function(notification, payload, sender) {
@@ -162,7 +165,17 @@ Module.register("MMM-AutoDimmer", {
 	},
 
 	socketNotificationReceived: function (notification, payload) {
-		// Do Nothing
+		switch (notification)
+		{
+			case "CUR_POWER":
+				if (!payload.error &&
+					(payload.state == "0" && this.shouldPowerOn) || 
+					(payload.state == "1" && !this.shouldPowerOn))
+				{
+					this.sendSocketNotification("TOGGLE_POWER");
+				}
+				break;
+		}
 	},
 
 	setNextDay: function(schedule) {
@@ -471,4 +484,15 @@ Module.register("MMM-AutoDimmer", {
 
 		return self.overlay;
 	},
+
+	initGPIOs : function() 
+	{
+		this.sendSocketNotification("POWER_INIT");
+	},
+
+	setPower : function(power)
+	{
+		this.shouldPowerOn = power;
+		this.sendSocketNotification("ASK_POWER");
+	}
 });
